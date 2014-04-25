@@ -35,7 +35,7 @@ get.vals <- function(lat,long,years){
   
   start.time = 1
   
-  data.dir  <-	"/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21"
+  data.dir  <-	"/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21/"
   nc	<-	nc_open(filename=paste(data.dir,'cru_ts3.21.',years,'.tmp.dat.nc',sep=''))
   lat.vals	<-	ncvar_get(nc,varid="lat")
   lon.vals	<-	ncvar_get(nc,varid="lon")
@@ -54,7 +54,7 @@ get.vals <- function(lat,long,years){
 get.station <- function(lat,long,years){
   start.time = 1
   
-  data.dir  <-  "/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21"
+  data.dir  <-  "/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21/"
   nc	<-	nc_open(filename=paste(data.dir,'cru_ts3.21.',years,'.tmp.stn.nc',sep=''))
   lat.vals	<-	ncvar_get(nc,varid="lat")
   lon.vals	<-	ncvar_get(nc,varid="lon")
