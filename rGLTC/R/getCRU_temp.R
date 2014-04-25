@@ -66,13 +66,13 @@ get.station <- function(lat,long,years){
   nc_close(nc)
   
   days.since = as.Date('1900-01-01')+days.since
-  df <- data.frame("DateTime"=days.since,"tmp"=vals)
+  df <- data.frame("DateTime"=days.since,"stn"=vals)
   return(df)
 }
 require(ncdf4)
 period = 'JFM'
 
-master	<-	read.table("/Users/jread/Documents/R/GLTC-R/data/Master_names_lat_lon.txt",header=TRUE,sep='\t')
+master	<-	read.table("/Users/jread/Documents/GLTC-stats/rGLTC/data/Master_names_lat_lon.txt",header=TRUE,sep='\t')
 lake.names	<-	names(master)
 lake.lat	<-	as.numeric(master[1,])
 lake.lon	<-	as.numeric(master[2,])
@@ -91,4 +91,4 @@ lake.df = data.frame(lake.CRU)
 names(lake.df) = lake.names
 lake.df <- cbind(data.frame("years"=use.years),lake.df)
 
-write.table(x=lake.df,file=paste("/Users/jread/Documents/R/GLTC-R/data/CRUts3.21_",period,".tsv",sep=''),quote=FALSE,sep='\t',row.names=FALSE)
+write.table(x=lake.df,file=paste("/Users/jread/Documents/GLTC-stats/rGLTC/data/CRUts3.21_",period,".tsv",sep=''),quote=FALSE,sep='\t',row.names=FALSE)
