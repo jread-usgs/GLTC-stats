@@ -35,7 +35,7 @@ get.vals <- function(lat,long,years){
   
   start.time = 1
   
-  data.dir  <-	"/Users/jread/Documents/R/GLTC-R/data/CRU_ts3.21/"
+  data.dir  <-	"/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21"
   nc	<-	nc_open(filename=paste(data.dir,'cru_ts3.21.',years,'.tmp.dat.nc',sep=''))
   lat.vals	<-	ncvar_get(nc,varid="lat")
   lon.vals	<-	ncvar_get(nc,varid="lon")
@@ -51,6 +51,24 @@ get.vals <- function(lat,long,years){
   return(df)
 }
 
+get.station <- function(lat,long,years){
+  start.time = 1
+  
+  data.dir  <-  "/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21"
+  nc	<-	nc_open(filename=paste(data.dir,'cru_ts3.21.',years,'.tmp.stn.nc',sep=''))
+  lat.vals	<-	ncvar_get(nc,varid="lat")
+  lon.vals	<-	ncvar_get(nc,varid="lon")
+  days.since <- ncvar_get(nc,varid="time")
+  
+  lat.i	<-	which.min(abs(lat.vals-lat))[1]
+  lon.i	<-	which.min(abs(lon.vals-long))[1]
+  vals = ncvar_get(nc=nc, varid="tmp",start=c(lon.i,lat.i,start.time),count=c(1,1,length(days.since)))
+  nc_close(nc)
+  
+  days.since = as.Date('1900-01-01')+days.since
+  df <- data.frame("DateTime"=days.since,"tmp"=vals)
+  return(df)
+}
 require(ncdf4)
 period = 'JFM'
 
