@@ -148,8 +148,8 @@ plot.gap.fig <- function(fig.name,write.dat,xlabel,ylabel,ylim,tick.y){
          lty=0, pch=c(1,18), cex=.75,bty='n')
   dev.off()
 }
-type.1 <- "SWdown_Summer"
-type.2 <- "PATMOS_Clouds_Summer"#CRU 3 month Tmax 1C"
+type.1 <- "In situ"
+type.2 <- "CRU 3 month Tmax 1C"
 s.vals <- compare.trends(type.1,type.2)
 ylabel <- paste0(type.2,' trends')
 xlabel <- paste0(type.1,' trends')
