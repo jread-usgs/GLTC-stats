@@ -84,11 +84,11 @@ compare.trends <- function(type.1,type.2,master,match=TRUE){
   
   s.vals <- matrix(nrow=length(lake.names),ncol=2)
   
-  for (j in 1:10){#length(lake.names)){
+  for (j in 1:length(lake.names)){
     df.list <- gap.match.pair(lake.names[j],type.1,type.2,master,match)
-    print(j)
+    cat(j);cat(' of '); cat(length(lake.names)); cat('\n')
     if (is.null(df.list)){
-      print(paste('skipping',j))
+      #print(paste('skipping',j))
     } else {
       if (nrow(df.list[[1]])> min.points & nrow(df.list[[2]])> min.points){
         sn.1 <- calc.sen.slope(df.list[[1]])
@@ -107,41 +107,61 @@ compare.trends <- function(type.1,type.2,master,match=TRUE){
   return(sens)
 }
 
-plot.gap.fig <- function(fig.name,write.dat,xlabel,ylabel){
+plot.gap.fig <- function(fig.name,write.dat,xlabel,ylabel,ylim,tick.y){
   fig.w  <-  2.25
   fig.h <- 2.25 
-  l.mar	<-	0.3
-  r.mar	<-	0.01#v.spc
-  t.mar	<-	0.01
+  l.mar	<-	0.35
+  r.mar	<-	0.03#v.spc
+  t.mar	<-	0.03
   b.mar	<-	0.35
   cex.box = 0.7
   cex.ttl = 0.8
-  tck	<-	-0.01
-
-  par.mgp  <-	data.frame(x=c(.75,-.10,0),y=c(.85,.1,0))
+  tck	<-	0.01
+  
+  tick.x <- seq(-.5,.5,.1)
+  if (missing(tick.y)){
+    tick.y <- seq(-.5,.5,.1)
+  }
+  if (missing(ylim)){
+    ylim=c(-.15,0.4)
+  }
+  
+  par.mgp  <-	data.frame(x=c(.85,-.20,0),y=c(.95,.1,0))
   png(filename = paste0("../Figures/",fig.name,".png"),
       width = fig.w, height = fig.h, units = "in", res=300,family="Arial Narrow")
   
   suppressWarnings(par(mgp=par.mgp$x,omi=c(0,0,0,0),mai=c(b.mar,l.mar, t.mar, r.mar),family="Arial Narrow"))
-  plot(write.dat[, 2],write.dat[, 3],ylab=ylabel,xlab=xlabel)
-  points(write.dat[, 4],write.dat[, 5],ylab=ylabel,xlab=xlabel,pch=19)
+  plot(write.dat[, 2],write.dat[, 3],
+       axes=F,ylab=ylabel,xlab=xlabel,xlim=c(-0.15,0.4),ylim=ylim,pch=1)
+  points(write.dat[, 4],write.dat[, 5],ylab=ylabel,xlab=xlabel,pch=18)
+  
+  axis(1,las=1,cex.axis=cex.box, tck=tck,at=tick.x)
+  axis(3,at=c(-1000,1000),las=1, cex.axis=cex.box)#, tck=tck,labels=NA)
+  par(mgp=par.mgp$y)
+  axis(2,las=1, cex.axis=cex.box, tck=tck,at=tick.y)
+  axis(4,at=c(-1000,1000),las=1, cex.axis=cex.box)
+  if (missing(ylim)){
+    abline(a=0,b=1,lty='solid',col='black',lwd=1.5)
+  }
+  
+  legend('topleft', c('matched','not matched') , 
+         lty=0, pch=c(1,18), cex=.75,bty='n')
   dev.off()
 }
-type.1 <- "Satellite"
-type.2 <- "CRU 3 month Tmax 1C"
+type.1 <- "SWdown_Summer"
+type.2 <- "PATMOS_Clouds_Summer"#CRU 3 month Tmax 1C"
 s.vals <- compare.trends(type.1,type.2)
 ylabel <- paste0(type.2,' trends')
 xlabel <- paste0(type.1,' trends')
 s.no.match <- compare.trends(type.1,type.2,match=F)
 
-#plot(s.vals[, 2],s.vals[, 3],ylab=ylabel,xlab=xlabel)
-#points(s.no.match[, 2],s.no.match[, 3],ylab=ylabel,xlab=xlabel,pch=19)
-
-write.dat <- cbind(s.vals,s.no.match[, 2:3])
-plot.gap.fig(fig.name=paste(t.1.nm ,t.2.nm,sep='.'),write.dat,xlabel,ylabel)
-
 t.1.nm <- gsub(pattern=' ',replacement='.',x=type.1)
 t.2.nm <- gsub(pattern=' ',replacement='.',x=type.2)
+
+write.dat <- cbind(s.vals,s.no.match[, 2:3])
+plot.gap.fig(fig.name=paste(t.1.nm ,t.2.nm,sep='.'),write.dat,xlabel,ylabel,ylim=c(-0.01,0.01),tick.y=seq(-0.015,.015,.005))
+
+
 
 file.out <- paste('../data/',paste(t.1.nm ,t.2.nm ,'csv',sep='.'),sep='')
 
