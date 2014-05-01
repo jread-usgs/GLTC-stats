@@ -85,7 +85,7 @@ compare.trends <- function(type.1,type.2,master,match=TRUE){
   s.vals <- matrix(nrow=length(lake.names),ncol=2)
   
   for (j in 1:50){#length(lake.names)){
-    df.list <- gap.match.pair(lake.names[j],type.1,type.2,master)
+    df.list <- gap.match.pair(lake.names[j],type.1,type.2,master,match)
     print(j)
     if (is.null(df.list)){
       print(paste('skipping',j))
@@ -115,5 +115,5 @@ xlabel <- paste0(type.1,' trends')
 s.no.match <- compare.trends("Satellite","CRU 3 month Tmax 1C",match=F)
 
 plot(s.vals[, 2],s.vals[, 3],ylab=ylabel,xlab=xlabel)
-points(s.no.match[, 2],s.vals[, 3],ylab=ylabel,xlab=xlabel,pch=19)
+points(s.no.match[, 2],s.no.match[, 3],ylab=ylabel,xlab=xlabel,pch=19)
 
