@@ -62,7 +62,7 @@ get.station <- function(lat,long,years){
   
   lat.i	<-	which.min(abs(lat.vals-lat))[1]
   lon.i	<-	which.min(abs(lon.vals-long))[1]
-  vals = ncvar_get(nc=nc, varid="tmp",start=c(lon.i,lat.i,start.time),count=c(1,1,length(days.since)))
+  vals = ncvar_get(nc=nc, varid="stn",start=c(lon.i,lat.i,start.time),count=c(1,1,length(days.since)))
   nc_close(nc)
   
   days.since = as.Date('1900-01-01')+days.since
@@ -89,6 +89,6 @@ for (i in 1:num.lakes){
 
 lake.df = data.frame(lake.CRU)
 names(lake.df) = lake.names
-lake.df <- cbind(data.frame("years"=use.years),lake.df)
+lake.df <- cbind(data.frame("years"=years),lake.df)
 
 write.table(x=lake.df,file=paste("/Users/jread/Documents/GLTC-stats/rGLTC/data/CRUts3.21_",period,".tsv",sep=''),quote=FALSE,sep='\t',row.names=FALSE)
