@@ -52,7 +52,7 @@ calc.sen.slope <- function(temp.df){
   slope.upper<-sen.stats$data$res2[1,16]
   
   graphics.off()
-  return(data.frame('p'=slope.p,'slope'=slope.slope,'lower'=slope.lower,'upper'=slope.upper))
+  return(data.frame('slope'=slope.slope,'p'=slope.p,'lower'=slope.lower,'upper'=slope.upper))
   
 }
 
@@ -90,9 +90,9 @@ compare.trends <- function(type.1,type.2,master,match=TRUE){
   lake.names <- lake.names(master)
   
   s.vals <- matrix(nrow=length(lake.names),ncol=2)
-  ret.sen.1 <- data.frame("No.years"=c(),'p'=c(),'slope'=c(),'lower'=c(),'upper'=c())
-  ret.sen.2 <- data.frame("No.years"=c(),'p'=c(),'slope'=c(),'lower'=c(),'upper'=c())
-  na.df <- data.frame("No.years"=NA,'p'=NA,'slope'=NA,'lower'=NA,'upper'=NA)
+  ret.sen.1 <- data.frame("No.years"=c(),'slope'=c(),'p'=c(),'lower'=c(),'upper'=c())
+  ret.sen.2 <- data.frame("No.years"=c(),'slope'=c(),'p'=c(),'lower'=c(),'upper'=c())
+  na.df <- data.frame("No.years"=NA,'slope'=NA,'p'=NA,'lower'=NA,'upper'=NA)
   
   for (j in 1:length(lake.names)){
     df.list <- gap.match.pair(lake.names[j],type.1,type.2,master,match)
@@ -123,7 +123,6 @@ compare.trends <- function(type.1,type.2,master,match=TRUE){
   }
   ret.sen.1 <- cbind(data.frame("Lake"=lake.names),ret.sen.1)
   ret.sen.2 <- cbind(data.frame("Lake"=lake.names),ret.sen.2)
-  #sens <- data.frame("Lake.names"=lake.names,'t1'=s.vals[, 1],'t2'=s.vals[, 2])
   sens <- list(type.1=ret.sen.1,type.2=ret.sen.2)
   return(sens)
 }
@@ -177,11 +176,11 @@ wrap.write <- function(type.1="In situ",type.2="CRU 3 month Tmean 1C"){
    t.2.nm <- gsub(pattern=' ',replacement='.',x=type.2)
    
    names.1 <- names(result$type.1)
-   names.1[-1] <- paste0(names.1[-1], '.', t.1.nm)
+   names.1[-1] <- paste0(t.1.nm, '.', names.1[-1])
    names(result$type.1) <- names.1
    
    names.2 <- names(result$type.2)
-   names.2[-1] <- paste0(names.2[-1], '.', t.2.nm)
+   names.2[-1] <- paste0(t.2.nm, names.2[-1], '.')
    names(result$type.2) <- names.2
    
    write.dat <- cbind(result$type.1,result$type.2[-1])
@@ -190,10 +189,5 @@ wrap.write <- function(type.1="In situ",type.2="CRU 3 month Tmean 1C"){
    
    return(result)
 }
-type.1 <- "In situ"
-type.2 <- "CRU 3 month Tmean 1C"
-plot.gap.fig(fig.name=paste(t.1.nm ,t.2.nm,sep='.'),write.dat,xlabel,ylabel)#,ylim=c(-0.01,0.01),tick.y=seq(-0.015,.015,.005))
-s.vals <- compare.trends(type.1,type.2)
-ylabel <- paste0(type.2,' trends')
-xlabel <- paste0(type.1,' trends')
-s.no.match <- compare.trends(type.1,type.2,match=F)
+
+wrap.write()
