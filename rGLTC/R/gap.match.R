@@ -1,4 +1,4 @@
-gap.match.pair <- function(lake.name,data.nm.1,data.nm.2,master,match=TRUE){
+gap.match.pair <- function(lake.name,data.nm.1,data.nm.2,master,match=TRUE,min.yyyy=1985,max.yyyy=2009){
   # returns a list of two data.frames, which fit the format of inputs for "calc.sen.slope" method
   year.col <- 2 # column for years
   
@@ -16,8 +16,10 @@ gap.match.pair <- function(lake.name,data.nm.1,data.nm.2,master,match=TRUE){
   yyyy.1 <- master[use.i.1, year.col]
   temp.2 <- as.numeric(master[lake.name][[1]][use.i.2])
   yyyy.2 <- master[use.i.2, year.col]
-  sub.dat.1 <- data.frame("Temp"=temp.1,"date"= as.Date(paste(yyyy.1,'-1-1',sep='')))
-  sub.dat.2 <- data.frame("Temp"=temp.2,"date"= as.Date(paste(yyyy.2,'-1-1',sep='')))
+  
+  
+  sub.dat.1 <- lim.yr(temp.1,yyyy.1,min.yyyy,max.yyyy)
+  sub.dat.2 <- lim.yr(temp.2,yyyy.2,min.yyyy,max.yyyy)
 
   sub.dat.1 <- sub.dat.1[!is.na(sub.dat.1[, 1]), ]
   sub.dat.2 <- sub.dat.2[!is.na(sub.dat.2[, 1]), ]
@@ -32,6 +34,11 @@ gap.match.pair <- function(lake.name,data.nm.1,data.nm.2,master,match=TRUE){
   return(match.list)
 }
 
+lim.yr <- function(temp,yyyy,min.yyyy,max.yyyy){
+  use.i <- min.yyyy <= yyyy & yyyy <= max.yyyy
+  
+  return(data.frame("Temp"=temp[use.i],"date"=as.Date(paste(yyyy[use.i],'-1-1',sep=''))))
+}
 calc.sen.slope <- function(temp.df){
   require("openair")
   # data.frame input with slots for "Temp", "date"
@@ -83,27 +90,41 @@ compare.trends <- function(type.1,type.2,master,match=TRUE){
   lake.names <- lake.names(master)
   
   s.vals <- matrix(nrow=length(lake.names),ncol=2)
+  ret.sen.1 <- data.frame("No.years"=c(),'p'=c(),'slope'=c(),'lower'=c(),'upper'=c())
+  ret.sen.2 <- data.frame("No.years"=c(),'p'=c(),'slope'=c(),'lower'=c(),'upper'=c())
+  na.df <- data.frame("No.years"=NA,'p'=NA,'slope'=NA,'lower'=NA,'upper'=NA)
   
   for (j in 1:length(lake.names)){
     df.list <- gap.match.pair(lake.names[j],type.1,type.2,master,match)
     cat(j);cat(' of '); cat(length(lake.names)); cat('\n')
     if (is.null(df.list)){
-      #print(paste('skipping',j))
+      ret.sen.1 <- rbind(ret.sen.1,na.df)
+      ret.sen.2 <- rbind(ret.sen.2,na.df)
     } else {
       if (nrow(df.list[[1]])> min.points & nrow(df.list[[2]])> min.points){
         sn.1 <- calc.sen.slope(df.list[[1]])
         sn.2 <- calc.sen.slope(df.list[[2]])
-        print(sn.1$slope)
-        s.vals[j,1] <- sn.1$slope
-        s.vals[j,2] <- sn.2$slope
+        
+        if (nrow(df.list[[1]])!=nrow(df.list[[2]])){stop('df.1 != df.2 length')}
+        no.years <- nrow(df.list[[1]]) # must be equal to nrow(sn.2)
+        
+        sn.1 <- cbind("No.years"=no.years,sn.1)
+        sn.2 <- cbind("No.years"=no.years,sn.2)
+        ret.sen.1 <- rbind(ret.sen.1,sn.1)
+        ret.sen.2 <- rbind(ret.sen.2,sn.2)
+      } else {
+        ret.sen.1 <- rbind(ret.sen.1,na.df)
+        ret.sen.2 <- rbind(ret.sen.2,na.df)
       }
       
     }
     
     
   }
-  sens <- data.frame("Lake.names"=lake.names,'t1'=s.vals[, 1],'t2'=s.vals[, 2])
-  names(sens) <- c("Lake.names",type.1,type.2)
+  ret.sen.1 <- cbind(data.frame("Lake"=lake.names),ret.sen.1)
+  ret.sen.2 <- cbind(data.frame("Lake"=lake.names),ret.sen.2)
+  #sens <- data.frame("Lake.names"=lake.names,'t1'=s.vals[, 1],'t2'=s.vals[, 2])
+  sens <- list(type.1=ret.sen.1,type.2=ret.sen.2)
   return(sens)
 }
 
@@ -148,22 +169,31 @@ plot.gap.fig <- function(fig.name,write.dat,xlabel,ylabel,ylim,tick.y){
          lty=0, pch=c(1,18), cex=.75,bty='n')
   dev.off()
 }
+
+wrap.write <- function(type.1="In situ",type.2="CRU 3 month Tmean 1C"){
+   result <- compare.trends(type.1,type.2,master,match=TRUE)
+   
+   t.1.nm <- gsub(pattern=' ',replacement='.',x=type.1)
+   t.2.nm <- gsub(pattern=' ',replacement='.',x=type.2)
+   
+   names.1 <- names(result$type.1)
+   names.1[-1] <- paste0(names.1[-1], '.', t.1.nm)
+   names(result$type.1) <- names.1
+   
+   names.2 <- names(result$type.2)
+   names.2[-1] <- paste0(names.2[-1], '.', t.2.nm)
+   names(result$type.2) <- names.2
+   
+   write.date <- cbind(result$type.1,result$type.2[-1])
+   file.out <- paste('../data/',paste(t.1.nm ,t.2.nm ,'gap.matched.csv',sep='.'),sep='')
+   write.table(x=write.dat,file=file.out,quote=F,row.names=F,col.names=T,sep=',')
+   
+   return(result)
+}
 type.1 <- "In situ"
-type.2 <- "CRU 3 month Tmax 1C"
+type.2 <- "CRU 3 month Tmean 1C"
+plot.gap.fig(fig.name=paste(t.1.nm ,t.2.nm,sep='.'),write.dat,xlabel,ylabel)#,ylim=c(-0.01,0.01),tick.y=seq(-0.015,.015,.005))
 s.vals <- compare.trends(type.1,type.2)
 ylabel <- paste0(type.2,' trends')
 xlabel <- paste0(type.1,' trends')
 s.no.match <- compare.trends(type.1,type.2,match=F)
-
-t.1.nm <- gsub(pattern=' ',replacement='.',x=type.1)
-t.2.nm <- gsub(pattern=' ',replacement='.',x=type.2)
-
-write.dat <- cbind(s.vals,s.no.match[, 2:3])
-plot.gap.fig(fig.name=paste(t.1.nm ,t.2.nm,sep='.'),write.dat,xlabel,ylabel,ylim=c(-0.01,0.01),tick.y=seq(-0.015,.015,.005))
-
-
-
-file.out <- paste('../data/',paste(t.1.nm ,t.2.nm ,'csv',sep='.'),sep='')
-
-cl.nm <- c("Lake.name",paste0(t.1.nm,'.match'),paste0(t.2.nm,'.match'),paste0(t.1.nm,'.NOmatch'),paste0(t.2.nm,'.NOmatch'))
-write.table(x=write.dat,file=file.out,quote=F,row.names=F,col.names=cl.nm,sep=',')
