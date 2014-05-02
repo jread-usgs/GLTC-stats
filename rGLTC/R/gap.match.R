@@ -184,7 +184,7 @@ wrap.write <- function(type.1="In situ",type.2="CRU 3 month Tmean 1C"){
    names.2[-1] <- paste0(names.2[-1], '.', t.2.nm)
    names(result$type.2) <- names.2
    
-   write.date <- cbind(result$type.1,result$type.2[-1])
+   write.dat <- cbind(result$type.1,result$type.2[-1])
    file.out <- paste('../data/',paste(t.1.nm ,t.2.nm ,'gap.matched.csv',sep='.'),sep='')
    write.table(x=write.dat,file=file.out,quote=F,row.names=F,col.names=T,sep=',')
    
