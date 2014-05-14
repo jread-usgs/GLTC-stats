@@ -77,9 +77,9 @@ plot.cru <- function(cru.data){
   library(maps)
   library(RColorBrewer) # for brewer.pal
   na.i <- cru.data$z < min.stn
-  s.1 <- cru.data$z >= min.stn & cru.data$z < 100
-  s.2 <- cru.data$z >= 100 & cru.data$z < 200
-  s.3 <- cru.data$z >= 200 & cru.data$z < 300
+  s.1 <- cru.data$z >= min.stn & cru.data$z < 50
+  s.2 <- cru.data$z >= 50 & cru.data$z < 100
+  s.3 <- cru.data$z >= 100 & cru.data$z < 300
   s.4 <- cru.data$z >= 300 & cru.data$z < 500
   s.5 <- cru.data$z >= 500 
   
@@ -99,9 +99,9 @@ plot.cru <- function(cru.data){
                          name="Station Count",
                          limits=c(0,max(cru.data$Station_count,na.rm=T)),
                          na.value='white',
-                         labels=c("< 10", "10 >= station# < 100", "100 >= station# < 200", 
-                                  "200 >= station# < 300", "300 >= station# < 500", ">= 500")) +
-   theme(legend.justification=c(0,0), legend.position=c(.05,.15))
+                         labels=c("< 10", "10 >= station# < 50", "50 >= station# < 100", 
+                                  "100 >= station# < 300", "300 >= station# < 500", ">= 500")) +
+   theme(legend.justification=c(0,0), legend.position=c(.1,.2))
 }
 
 flatten.cru <- function(cru.stn){
