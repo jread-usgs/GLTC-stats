@@ -180,14 +180,24 @@ wrap.write <- function(type.1="In situ",type.2="CRU 3 month Tmean 1C"){
    names(result$type.1) <- names.1
    
    names.2 <- names(result$type.2)
-   names.2[-1] <- paste0(t.2.nm, names.2[-1], '.')
+   names.2[-1] <- paste0(t.2.nm, '.', names.2[-1])
    names(result$type.2) <- names.2
    
    write.dat <- cbind(result$type.1,result$type.2[-1])
    file.out <- paste('../data/',paste(t.1.nm ,t.2.nm ,'gap.matched.csv',sep='.'),sep='')
    write.table(x=write.dat,file=file.out,quote=F,row.names=F,col.names=T,sep=',')
    
-   return(result)
+   return(write.dat)
 }
 
-wrap.write()
+dat.types <- c("CRU 3 month Tmean 1C",
+               "CRU WINTER Tmean 1C",
+               "CRU Annual Tmean 1C",
+               "CRU 3 month DTR 1C",
+               "CRU WINTER DTR 1C",
+               "CRU Annual DTR 1C")
+for (i in 1:length(dat.types)){
+  #result <- wrap.write(type.1="Satellite",type.2=dat.types[i])
+  result <- wrap.write(type.1="In situ",type.2=dat.types[i])
+}
+
