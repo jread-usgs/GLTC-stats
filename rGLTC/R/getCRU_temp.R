@@ -69,10 +69,54 @@ get.station <- function(lat,long,years){
   df <- data.frame("DateTime"=days.since,"stn"=vals)
   return(df)
 }
+
+plot.cru <- function(cru.data){
+
+  library(ggplot2)
+  library(maps)
+  names(cru.data) = c('Longitude','Latitude','Station_count')
+  world_map <- map_data("world")
+  (ggplot(aes(x=Longitude,y=Latitude,fill=Station_count),data=cru.data) + 
+     geom_tile()) + 
+    geom_polygon(data=world_map,aes(x=long, y=lat, group=group), colour="black", fill="white", alpha=0) +
+    scale_fill_gradient2(mid='grey80', high="red", low="blue",na.value='white',guide='legend')
+}
+
+flatten.cru <- function(cru.stn){
+  x = ncvar_get(cru.stn,varid="lon")
+  y = ncvar_get(cru.stn,varid="lat")
+  z = ncvar_get(cru.stn,varid="stn",count=c(720,360,120)) #only one year for now!!!
+  
+  def.vec <- vector(length=(length(x)*length(y)))
+  
+  data.out <- data.frame(x=def.vec,y=def.vec,z=def.vec)
+  x.vec = def.vec
+  y.vec = def.vec
+  z.vec = def.vec
+  cnt = 1
+  for (j in 1:length(x)){
+    for (i in 1:length(y)){
+      x.vec[cnt] = x[j]
+      y.vec[cnt] = y[i]
+      z.vec[cnt] = mean(z[j, i, ]) # temporal mean
+      cnt = cnt+1
+    }
+    print(paste(j,'of',length(x)))
+  }
+  data.out = data.frame('x'=x.vec,'y'=y.vec,'z'=z.vec)
+  return(data.out)
+}
+
+data.dir  <-  "/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21/"
+years = '1981.1990'
+nc  <-	nc_open(filename=paste(data.dir,'cru_ts3.21.',years,'.tmp.stn.nc',sep=''))
+cru.data <- flatten.cru(nc)
+plot.cru(cru.data)
+
 require(ncdf4)
 period = 'JFM'
 
-master	<-	read.table("/Users/jread/Documents/GLTC-stats/rGLTC/data/Master_names_lat_lon.txt",header=TRUE,sep='\t')
+master  <-	read.table("/Users/jread/Documents/GLTC-stats/rGLTC/data/Master_names_lat_lon.txt",header=TRUE,sep='\t')
 lake.names	<-	names(master)
 lake.lat	<-	as.numeric(master[1,])
 lake.lon	<-	as.numeric(master[2,])
