@@ -72,20 +72,37 @@ get.station <- function(lat,long,years){
 
 plot.cru <- function(cru.data){
 
+  min.stn <- 10
   library(ggplot2)
   library(maps)
+  library(RColorBrewer) # for brewer.pal
+  na.i <- cru.data$z < min.stn
+  s.1 <- cru.data$z >= min.stn & cru.data$z < 100
+  s.2 <- cru.data$z >= 100 & cru.data$z < 200
+  s.3 <- cru.data$z >= 200 & cru.data$z < 300
+  s.4 <- cru.data$z >= 300 & cru.data$z < 500
+  s.5 <- cru.data$z >= 500 
+  
+  cru.data$z[na.i] = 0
+  cru.data$z[s.1] = 1
+  cru.data$z[s.2] = 2
+  cru.data$z[s.3] = 3
+  cru.data$z[s.4] = 4
+  cru.data$z[s.5] = 5
+ # hist(cru.data$z)
   names(cru.data) = c('Longitude','Latitude','Station_count')
   world_map <- map_data("world")
   (ggplot(aes(x=Longitude,y=Latitude,fill=Station_count),data=cru.data) + 
      geom_tile()) + 
     geom_polygon(data=world_map,aes(x=long, y=lat, group=group), colour="black", fill="white", alpha=0) +
-    scale_fill_gradient2(mid='grey80', high="red", low="blue",na.value='white',guide='legend')
+    scale_fill_gradientn(guide = 'legend', colours = brewer.pal(n = 6, name = 'Set1'),limits=c(0,max(cru.data$Station_count,na.rm=T)))
+    #scale_fill_gradient2(mid='grey80', high="red", low="blue",na.value='white',guide='legend',limits=c(min.stn,max(cru.data$Station_count,na.rm=T)))
 }
 
 flatten.cru <- function(cru.stn){
   x = ncvar_get(cru.stn,varid="lon")
   y = ncvar_get(cru.stn,varid="lat")
-  z = ncvar_get(cru.stn,varid="stn",count=c(720,360,120)) #only one year for now!!!
+  z = ncvar_get(cru.stn,varid="stn",start=c(1,1,49),count=c(720,360,1)) #only one month for now!!! (jan 1985)
   
   def.vec <- vector(length=(length(x)*length(y)))
   
@@ -98,7 +115,7 @@ flatten.cru <- function(cru.stn){
     for (i in 1:length(y)){
       x.vec[cnt] = x[j]
       y.vec[cnt] = y[i]
-      z.vec[cnt] = mean(z[j, i, ]) # temporal mean
+      z.vec[cnt] = z[j, i]
       cnt = cnt+1
     }
     print(paste(j,'of',length(x)))
