@@ -70,7 +70,7 @@ get.station <- function(lat,long,years){
   return(df)
 }
 
-plot.cru <- function(cru.data){
+plot.cru <- function(cru.data,points){
 
   min.stn <- 10
   library(ggplot2)
@@ -92,16 +92,20 @@ plot.cru <- function(cru.data){
  # hist(cru.data$z)
   names(cru.data) = c('Longitude','Latitude','Station_count')
   world_map <- map_data("world")
-  (ggplot(aes(x=Longitude,y=Latitude,fill=Station_count),data=cru.data) + 
-     geom_tile()) + 
-    geom_polygon(data=world_map,aes(x=long, y=lat, group=group), colour="black", fill="white", alpha=0) +
-    scale_fill_gradientn(guide = 'legend', colours = brewer.pal(n = 6, name = 'Set1'),
-                         name="Station Count",
-                         limits=c(0,max(cru.data$Station_count,na.rm=T)),
-                         na.value='white',
-                         labels=c("< 10", "10 >= station# < 50", "50 >= station# < 100", 
-                                  "100 >= station# < 300", "300 >= station# < 500", ">= 500")) +
-   theme(legend.justification=c(0,0), legend.position=c(.1,.2))
+ 
+ p1 <- ggplot()
+ 
+ p1 <- p1 + geom_tile(data=cru.data,aes(x=Longitude,y=Latitude,fill=Station_count)) +
+   scale_fill_gradientn(guide = 'legend', colours = c("red","darkgoldenrod2","darkolivegreen2","darkslategrey","darkorchid2","dodgerblue1"),#brewer.pal(n = 6, name = 'Set1'),
+                        name="Station Count",
+                        limits=c(0,max(cru.data$Station_count,na.rm=T)),
+                        na.value='white',
+                        labels=c("< 10", "10 >= station# < 50", "50 >= station# < 100", 
+                                 "100 >= station# < 300", "300 >= station# < 500", ">= 500"))
+ p1 <- p1 + geom_polygon(data=world_map,aes(x=long, y=lat, group=group), colour="black", fill="white", alpha=0)
+ p1 <- p1 + theme(legend.justification=c(0,0), legend.position=c(.1,.2))
+ p1 <- p1 + geom_point(data=points, aes(x = Longitude,y=Latitude),pch=23,bg='white',col='black',cex=2,lwd=3) + theme(panel.background = element_blank()) 
+ p1
 }
 
 flatten.cru <- function(cru.stn){
@@ -129,19 +133,25 @@ flatten.cru <- function(cru.stn){
   return(data.out)
 }
 require(ncdf4)
+
+period = 'JFM'
+
+master  <-  read.table("/Users/jread/Documents/GLTC-stats/rGLTC/data/Master_names_lat_lon.txt",header=TRUE,sep='\t')
+lake.names	<-	names(master)
+lake.lat	<-	as.numeric(master[1,])
+lake.lon	<-	as.numeric(master[2,])
+
 data.dir  <-  "/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21/"
 years = '1981.1990'
 nc  <-	nc_open(filename=paste(data.dir,'cru_ts3.21.',years,'.tmp.stn.nc',sep=''))
 cru.data <- flatten.cru(nc)
-plot.cru(cru.data)
+
+points = data.frame(Longitude=lake.lon,Latitude=lake.lat,'Station_count'=rep(1,length(lake.lon)))
+plot.cru(cru.data,points)
 
 
-period = 'JFM'
 
-master  <-	read.table("/Users/jread/Documents/GLTC-stats/rGLTC/data/Master_names_lat_lon.txt",header=TRUE,sep='\t')
-lake.names	<-	names(master)
-lake.lat	<-	as.numeric(master[1,])
-lake.lon	<-	as.numeric(master[2,])
+
 
 years = seq(1985,2009)
 num.years = length(years)
