@@ -95,8 +95,13 @@ plot.cru <- function(cru.data){
   (ggplot(aes(x=Longitude,y=Latitude,fill=Station_count),data=cru.data) + 
      geom_tile()) + 
     geom_polygon(data=world_map,aes(x=long, y=lat, group=group), colour="black", fill="white", alpha=0) +
-    scale_fill_gradientn(guide = 'legend', colours = brewer.pal(n = 6, name = 'Set1'),limits=c(0,max(cru.data$Station_count,na.rm=T)))
-    #scale_fill_gradient2(mid='grey80', high="red", low="blue",na.value='white',guide='legend',limits=c(min.stn,max(cru.data$Station_count,na.rm=T)))
+    scale_fill_gradientn(guide = 'legend', colours = brewer.pal(n = 6, name = 'Set1'),
+                         name="Station Count",
+                         limits=c(0,max(cru.data$Station_count,na.rm=T)),
+                         na.value='white',
+                         labels=c("< 10", "10 >= station# < 100", "100 >= station# < 200", 
+                                  "200 >= station# < 300", "300 >= station# < 500", ">= 500")) +
+   theme(legend.justification=c(0,0), legend.position=c(.05,.15))
 }
 
 flatten.cru <- function(cru.stn){
@@ -123,14 +128,14 @@ flatten.cru <- function(cru.stn){
   data.out = data.frame('x'=x.vec,'y'=y.vec,'z'=z.vec)
   return(data.out)
 }
-
+require(ncdf4)
 data.dir  <-  "/Users/jread/Documents/GLTC-stats/rGLTC/data/CRU_ts3.21/"
 years = '1981.1990'
 nc  <-	nc_open(filename=paste(data.dir,'cru_ts3.21.',years,'.tmp.stn.nc',sep=''))
 cru.data <- flatten.cru(nc)
 plot.cru(cru.data)
 
-require(ncdf4)
+
 period = 'JFM'
 
 master  <-	read.table("/Users/jread/Documents/GLTC-stats/rGLTC/data/Master_names_lat_lon.txt",header=TRUE,sep='\t')
