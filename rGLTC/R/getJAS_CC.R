@@ -9,7 +9,7 @@ getJAS_CC	<-	function(lat,long,year, period='JAS'){
 	mm.idx <- seq(1,12)
   }
 
-	data.dir	<-	"/Users/jread/Documents/R/GLTC-R/data/Cloud_cover_PATMOSX/"
+	data.dir	<-	"/Users/jread/Documents/GLTC-stats/rGLTC/data/Cloud_cover_PATMOSX/"
 	nc	<-	nc_open(filename=paste(data.dir,'CA_PATMOSX_NOAA_0130PM_',as.character(year),'.nc',sep=''))
 	lat.vals	<-	ncvar_get(nc,varid="latitude")
 	lon.vals	<-	ncvar_get(nc,varid="longitude")
