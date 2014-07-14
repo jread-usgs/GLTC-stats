@@ -65,7 +65,7 @@ cat("lat,lon,slope(CC)\n", file=summaryTxt,append=FALSE)
 
 require('zyp')
 
-for (j in 1:length(lat.vals)){
+for (j in 48:length(lat.vals)){
   for (i in 1:length(lon.vals)){
     vals.out <- getCRU(period='JAS',use.years = years,lat.i=j,lon.i=i)
     y = vals.out$tMean
