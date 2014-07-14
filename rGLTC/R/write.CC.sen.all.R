@@ -38,7 +38,7 @@ cat("lat,lon,slope(CC)\n", file=summaryTxt,append=FALSE)
 
 
 
-for (j in 19:length(lat.vals)){
+for (j in 1:length(lat.vals)){
   for (i in 1:length(lon.vals)){
 
     vals.out <- get.all.CC(years,period='JAS',lat.i=j,lon.i=i)
