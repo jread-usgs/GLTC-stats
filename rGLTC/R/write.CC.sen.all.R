@@ -36,14 +36,15 @@ get.all.CC <-	function(years,period='JAS',lat.i,lon.i){
 summaryTxt = paste('/Users/jread/Documents/GLTC-stats/rGLTC/data/CC_all_sen.csv',sep='')
 cat("lat,lon,slope(CC)\n", file=summaryTxt,append=FALSE)
 
-
+require('zyp')
 
 for (j in 1:length(lat.vals)){
   for (i in 1:length(lon.vals)){
 
     vals.out <- get.all.CC(years,period='JAS',lat.i=j,lon.i=i)
-    temp.df <- data.frame("Temp"=vals.out,"date"=as.Date(paste(years,'-1-1',sep='')))
-    sens <- calc.sen.slope(temp.df)$slope
+    y = vals.out
+    x = as.numeric(as.Date(paste(years,'-1-1',sep='')))/365.25
+    sens <- zyp.sen(y~x)$coefficients[[2]]
     cat(paste(c(lat.vals[j],',',lon.vals[i],',',sens,'\n'),collapse=''), file=summaryTxt,append=TRUE)
   }
   cat(j);cat(' of ');cat(length(lat.vals));cat('done......\n')
