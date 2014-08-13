@@ -1,5 +1,5 @@
 
-getCRU	<-	function(lat,long, period='JAS',use.years = seq(1985,2009)){
+getCRU	<-	function(lat,long, period='JAS',use.years = seq(1985,2009),lat.i=NULL,lon.i=NULL){
 	require(ncdf4)
   if (period=="JAS"){
     mm.idx  <-	c(7,8,9)
@@ -11,14 +11,14 @@ getCRU	<-	function(lat,long, period='JAS',use.years = seq(1985,2009)){
 	
   
   
-  vals = get.vals(lat,long,years='1981.1990')
+  vals = get.vals(lat,long,years='1981.1990',lat.i,lon.i)
 
   CA = vals
   
-	vals = get.vals(lat,long,years='1991.2000')
+	vals = get.vals(lat,long,years='1991.2000',lat.i,lon.i)
 	CA	<-	rbind(CA,vals)
   
-	vals = get.vals(lat,long,years='2001.2010')
+	vals = get.vals(lat,long,years='2001.2010',lat.i,lon.i)
 	CA	<-	rbind(CA,vals)
   
   data.out <- data.frame("years"=use.years,"tMean"=vector(length=length(use.years)))
@@ -31,7 +31,7 @@ getCRU	<-	function(lat,long, period='JAS',use.years = seq(1985,2009)){
 	return(data.out)
 }
 
-get.vals <- function(lat,long,years){
+get.vals <- function(lat,long,years,lat.i=NULL,lon.i=NULL){
   
   start.time = 1
   
@@ -41,8 +41,13 @@ get.vals <- function(lat,long,years){
   lon.vals	<-	ncvar_get(nc,varid="lon")
   days.since <- ncvar_get(nc,varid="time")
   
-  lat.i	<-	which.min(abs(lat.vals-lat))[1]
-  lon.i	<-	which.min(abs(lon.vals-long))[1]
+  if (is.null(lat.i)){
+    lat.i  <-	which.min(abs(lat.vals-lat))[1]
+  }
+  if (is.null(lon.i)){
+    lon.i  <-	which.min(abs(lon.vals-long))[1]
+  }
+  
   vals = ncvar_get(nc=nc, varid="tmp",start=c(lon.i,lat.i,start.time),count=c(1,1,length(days.since)))
   nc_close(nc)
   
