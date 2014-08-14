@@ -48,6 +48,7 @@ library("stringr")
 delim = ','
 con <- file('../data/Master_2014-06-03.csv', "r", blocking = FALSE)
 time_rng <- c(1985,2009)
+p_val <- 0.01
 line <- readLines(con, n = 1)
 lake_names <- str_split(line, delim)[[1]][-2:-1]
 line <- readLines(con, n = 4) # code, etc
@@ -79,7 +80,7 @@ match_cor <- function(lake_1,lake_2){
   
   to_test <- matrix(c(lake_1$temperature[u_1],lake_2$temperature[u_2]), ncol=2)
   if (dim(to_test)[1]>4){
-    p<- rcorr(to_test, type = 'spearman')$P[1,2] 
+    p<- rcorr(to_test, type = 'pearson')$P[1,2] # TEST THIS!!!!!
   } else {
     p = NA
   }
@@ -90,12 +91,20 @@ match_cor <- function(lake_1,lake_2){
 
 library(maps)
 library(mapdata)
+library(geosphere)
+xlim <- c(-171.738281, -56.601563)
+ylim <- c(12.039321, 71.856229)
 
-map() # map of the world
+map("world", col="grey80", fill=TRUE, bg="white", lwd=0.05, xlim=xlim, ylim=ylim)
 node_size <- function(p_vals){
-  sig <- sum(p_vals < .1, na.rm = T)
-  sz <- 1+sig/20
+  sig <- sum(p_vals < p_val, na.rm = T)
+  sz <- .5+sig/30
   return(sz)
+}
+
+add_arc <- function(lake_1,lake_2){
+  inter <- gcIntermediate(c(lake_1$lon, lake_1$lat), c(lake_2$lon, lake_2$lat), n=20, addStartEnd=TRUE)
+  lines(inter, lwd = .2, col=rgb(0,0,0,.05,1))
 }
 for (k in 1:length(lake_names)){
   lake_1 <- lake_data[[k]] # lake_2 is all other lakes 
@@ -107,8 +116,8 @@ for (k in 1:length(lake_names)){
   for (i in 1:length(other_lakes)){
     lake_2 <- lake_data[[other_lakes[i]]]
     p_vals[i] <- match_cor(lake_1,lake_2)
-    if (!is.na(p_vals[i]) & p_vals[i] < 0.1){
-      lines(x = c(lake_1$lon,lake_2$lon), y = c(lake_1$lat,lake_2$lat), lwd = .3, col=rgb(0,0,0,.05,1))
+    if (!is.na(p_vals[i]) & p_vals[i] < p_val){
+      add_arc(lake_1,lake_2)
     }
     #cat(p_vals[i]); cat('\n')
   }
@@ -116,9 +125,9 @@ for (k in 1:length(lake_names)){
   if (sz == 1){
     bg_col <- rgb(.6,0,0,1,1)
   } else {
-    bg_col <- rgb(0,0,0,.4,1)
+    bg_col <- rgb(0,0,0,.2,1)
   }
-  points(x = lake_1$lon, y = lake_1$lat,cex = sz, pch = 20, col = bg_col, bg=rgb(0,0,0,.8,1))
+  points(x = lake_1$lon, y = lake_1$lat,cex = sz, pch = 20, col = bg_col, bg=rgb(0,0,0,.4,1))
 }
 
 
