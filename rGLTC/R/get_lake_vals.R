@@ -93,7 +93,7 @@ library(mapdata)
 
 map() # map of the world
 node_size <- function(p_vals){
-  sig <- sum(p_vals > .9, na.rm = T)
+  sig <- sum(p_vals < .1, na.rm = T)
   sz <- 1+sig/20
   return(sz)
 }
@@ -107,7 +107,7 @@ for (k in 1:length(lake_names)){
   for (i in 1:length(other_lakes)){
     lake_2 <- lake_data[[other_lakes[i]]]
     p_vals[i] <- match_cor(lake_1,lake_2)
-    if (!is.na(p_vals[i]) & p_vals[i] > 0.9){
+    if (!is.na(p_vals[i]) & p_vals[i] < 0.1){
       lines(x = c(lake_1$lon,lake_2$lon), y = c(lake_1$lat,lake_2$lat), lwd = .3, col=rgb(0,0,0,.05,1))
     }
     #cat(p_vals[i]); cat('\n')
