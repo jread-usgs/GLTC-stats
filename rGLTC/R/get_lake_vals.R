@@ -71,4 +71,36 @@ sat_time <- get_time(line)
 # lake_data is the list of the lat, lon, time and temp for each lake.
 lake_data <- build_lake_list(situ_time, situ_data, sat_time, sat_data, lake_names, lat, lon)
 
+match_cor <- function(lake_1,lake_2){
+  t_1 <- lake_1$time
+  t_2 <- lake_2$time
+  u_2 <- lake_2$time %in% lake_1$time
+  u_1 <- lake_1$time %in% lake_2$time[u_2]
+  
+  p<- cor(x = lake_1$temperature[u_1],y = lake_2$temperature[u_2], method = 'pearson')
+  
+  return(p)
+}
+
+library(maps)
+library(mapdata)
+
+map() # map of the world
+
+for (k in 1:length(lake_names)){
+  lake_1 <- lake_data[[k]] # lake_2 is all other lakes 
+  
+  other_lakes <- lake_names[lake_names != lake_names[k]]
+  p_vals <- vector(length=length(other_lakes))
+  for (i in 1:length(other_lakes)){
+    lake_2 <- lake_data[[other_lakes[i]]]
+    p_vals[i] <- match_cor(lake_1,lake_2)
+    if (!is.na(p_vals[i]) & p_vals[i] > 0.8){
+      lines(x = c(lake_1$lon,lake_2$lon), y = c(lake_1$lat,lake_2$lat), lwd = p_vals[i]*2, col=rgb(0,0,0,.05,1))
+    }
+    #cat(p_vals[i]); cat('\n')
+  }
+}
+
+
 
