@@ -98,7 +98,7 @@ ylim <- c(12.039321, 71.856229)
 map("world", col="grey80", fill=TRUE, bg="white", lwd=0.05, xlim=xlim, ylim=ylim)
 node_size <- function(p_vals){
   sig <- sum(p_vals < p_val, na.rm = T)
-  sz <- .5+sig/30
+  sz <- .5+sig/100
   return(sz)
 }
 
