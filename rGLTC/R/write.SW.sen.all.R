@@ -10,7 +10,6 @@ nc	<<-	nc_open(filename=paste(data.dir,'SRB_sw_dn_JAS.nc',sep=''))
 
 lat.vals  <<-	ncvar_get(nc,varid="lat")
 lon.vals	<<-	ncvar_get(nc,varid="lon")
-#time <<- ncvar_get(nc,varid="time")
 
 years <<- seq(1985,2007)
 
