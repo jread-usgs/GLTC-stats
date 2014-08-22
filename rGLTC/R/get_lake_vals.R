@@ -45,6 +45,7 @@ build_lake_list <- function(time, data, sat_time, sat_data, lake_names, lat, lon
 
 # open master
 library("stringr")
+min_size <<- 0.5
 delim = ','
 con <- file('../data/Master_2014-06-03.csv', "r", blocking = FALSE)
 time_rng <- c(1985,2009)
@@ -83,12 +84,14 @@ match_cor <- function(lake_1,lake_2, detrend = TRUE){
   u_1 <- lake_1$time %in% lake_2$time[u_2]
   temp_1 <- lake_1$temperature[u_1]
   temp_2 <- lake_2$temperature[u_2]
-  if (detrend){
-    temp_1 <- detrend(x = temp_1, tt = 'linear')[,1]
-    temp_2 <- detrend(x = temp_2, tt = 'linear')[,1]
-  }
+  
   to_test <- matrix(c(temp_1,temp_2), ncol=2)
   if (dim(to_test)[1] >= min_n){
+    if (detrend){
+      temp_1 <- detrend(x = temp_1, tt = 'linear')[,1]
+      temp_2 <- detrend(x = temp_2, tt = 'linear')[,1]
+      to_test <- matrix(c(temp_1,temp_2), ncol=2)
+    }
     cor_v <- rcorr(to_test, type = 'pearson')
     p<- data.frame(p=cor_v$P[1,2], r =  cor_v$r[1,2])
   } else {
@@ -108,7 +111,7 @@ ylim <- c(12.039321, 71.856229)
 map("world", xlim=xlim, ylim=ylim) #col="grey80", fill=TRUE, bg="white", lwd=0.05, 
 node_size <- function(p_vals){
   sig <- sum(p_vals < p_val, na.rm = T)
-  sz <- .5+sig/100
+  sz <- min_size+sig/100
   return(sz)
 }
 
@@ -134,7 +137,7 @@ for (k in 1:length(lake_names)){
     #cat(p_vals[i]); cat('\n')
   }
   sz <- node_size(p_vals)
-  if (sz == 1){
+  if (sz == min_size){
     bg_col <- rgb(.6,0,0,1,1)
   } else {
     bg_col <- rgb(0,0,0,.2,1)
