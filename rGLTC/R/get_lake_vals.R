@@ -73,13 +73,21 @@ sat_time <- get_time(line)
 # lake_data is the list of the lat, lon, time and temp for each lake.
 lake_data <- build_lake_list(situ_time, situ_data, sat_time, sat_data, lake_names, lat, lon)
 library(Hmisc)
-match_cor <- function(lake_1,lake_2){
+
+library(pracma)
+
+match_cor <- function(lake_1,lake_2, detrend = TRUE){
   t_1 <- lake_1$time
   t_2 <- lake_2$time
   u_2 <- lake_2$time %in% lake_1$time
   u_1 <- lake_1$time %in% lake_2$time[u_2]
-  
-  to_test <- matrix(c(lake_1$temperature[u_1],lake_2$temperature[u_2]), ncol=2)
+  temp_1 <- lake_1$temperature[u_1]
+  temp_2 <- lake_2$temperature[u_2]
+  if (detrend){
+    temp_1 <- detrend(x = temp_1, tt = 'linear')[,1]
+    temp_2 <- detrend(x = temp_2, tt = 'linear')[,1]
+  }
+  to_test <- matrix(c(temp_1,temp_2), ncol=2)
   if (dim(to_test)[1] >= min_n){
     cor_v <- rcorr(to_test, type = 'pearson')
     p<- data.frame(p=cor_v$P[1,2], r =  cor_v$r[1,2])
@@ -97,7 +105,7 @@ library(geosphere)
 xlim <- c(-171.738281, -56.601563)
 ylim <- c(12.039321, 71.856229)
 
-map("world")#, xlim=xlim, ylim=ylim) #col="grey80", fill=TRUE, bg="white", lwd=0.05, 
+map("world", xlim=xlim, ylim=ylim) #col="grey80", fill=TRUE, bg="white", lwd=0.05, 
 node_size <- function(p_vals){
   sig <- sum(p_vals < p_val, na.rm = T)
   sz <- .5+sig/100
