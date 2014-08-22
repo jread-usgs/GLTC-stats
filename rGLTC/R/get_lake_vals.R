@@ -117,12 +117,21 @@ match_cor <- function(lake_1,lake_2, detrend = TRUE){
   
   return(p)
 }
-get_lat_region <- function(lake){
-  lat <- data.frame('Africa' = 32, 'Asia' = 44, 'Oceania' = 19, 
-                    'Europe' = 58, 'Middle.East' = 39, 'South.America' = 21)
+
+plot_region <- function(region){
   
-  lon <- data.frame('Africa' = -166, 'Asia' = -170, 'Oceania' = -150, 
-                    'Europe' = -55, 'Middle.East' = -55, 'South.America' = -82)
+  fake_lake <- list(region=region, lat=0,lon=0)
+  location <- get_lat_region(fake_lake)
+  points(location$lon,location$lat,cex = 16, pch=21, bg='white',col='black')
+  text(location$lon,location$lat,region)
+}
+
+get_lat_region <- function(lake){
+  lat <- data.frame('Africa' = 32, 'Asia' = 48, 'Oceania' = 25, 
+                    'Europe' = 58, 'Middle.East' = 39, 'South.America' = 25)
+  
+  lon <- data.frame('Africa' = -156, 'Asia' = -160, 'Oceania' = -150, 
+                    'Europe' = -55, 'Middle.East' = -55, 'South.America' = -65)
   
   region <- strrep(lake$region, " ", ".")
   lake$lat <- as.numeric(lat[region])
@@ -130,22 +139,24 @@ get_lat_region <- function(lake){
   return(lake)
 }
 
+
+
 library(maps)
 library(mapdata)
 library(geosphere)
-xlim <- c(-171.738281, -52.601563)
+xlim <- c(-173, -48)
 ylim <- c(18.039321, 75.856229)
 
 map("worldHires",c("Canada","USA", "Mexico"), xlim=xlim, ylim=ylim) #col="grey80", fill=TRUE, bg="white", lwd=0.05, 
 node_size <- function(p_vals){
   sig <- sum(p_vals < p_val, na.rm = T)
-  sz <- min_size+sig/100
+  sz <- min_size+sig/25
   return(sz)
 }
 
 add_arc <- function(lake_1,lake_2,r_val){
   inter <- gcIntermediate(c(lake_1$lon, lake_1$lat), c(lake_2$lon, lake_2$lat), n=20, addStartEnd=TRUE)
-  lines(inter, lwd = .2, col=rgb(0,0,0,.3*abs(r_val),1))
+  lines(inter, lwd = .2, col=rgb(0,0,0,.2*abs(r_val),1))
 }
 
 
@@ -181,6 +192,9 @@ for (k in 1:length(plot_lakes)){
   }
   points(x = lake_1$lon, y = lake_1$lat,cex = sz, pch = 20, col = bg_col, bg=rgb(0,0,0,.4,1))
 }
-
+region_markers <- unique(region)[!(unique(region) %in% regions)]
+for (k in 1:length(region_markers)){
+  plot_region(region_markers[k])
+}
 
 
